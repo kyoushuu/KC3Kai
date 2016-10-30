@@ -6,7 +6,7 @@
 	KC3StrategyTabs.akashi.definition = {
 		tabSelf: KC3StrategyTabs.akashi,
 		upgrades: {},
-		today: {},
+		today: [],
 		ships: [],
 		gears: [],
 		instances: {},
@@ -81,11 +81,23 @@
 			dayName = (dayName || $("#weekday-{0}".format(todayDow)).data("value")).toLowerCase();
 			$(".weekdays .weekday").removeClass("active");
 			$(".weekdays .weekday[data-value={0}]".format(dayName)).addClass("active");
-			
-			this.today = this.upgrades[ dayName ];
+
+			this.today = [];
+			$.each(this.upgrades[dayName], function(itemId, shipList){
+				self.today.push({itemId: itemId, shipList: shipList});
+			});
+			this.today.sort(function(a,b){
+				var result = KC3Master.slotitem(a.itemId).api_type[3] - KC3Master.slotitem(b.itemId).api_type[3];
+				if (result === 0) {
+					return a.itemId - b.itemId;
+				} else {
+					return result;
+				}
+			});
 			
 			$(".equipment_list").empty();
 			
+			var itemId, shipList;
 			var ThisBox, MasterItem, ItemName;
 			var hasShip, hasGear, ctr;
 			var ShipBox, ShipId;
@@ -96,7 +108,10 @@
 				KC3StrategyTabs.gotoTab("mstgear", $(this).attr("alt"));
 			};
 			
-			$.each(this.today, function(itemId, shipList){
+			$.each(this.today, function(index, item){
+				itemId = item.itemId;
+				shipList = item.shipList;
+
 				MasterItem = KC3Master.slotitem(itemId);
 				ItemName = KC3Meta.gearName( MasterItem.api_name );
 				
